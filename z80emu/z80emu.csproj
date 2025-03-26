@@ -1,14 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>library</OutputType>
-    <TargetFrameworks>net7.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
   </PropertyGroup>
-  <ItemGroup>
-    <Content Remove="48.rom" />
-    <Content Remove="128-0.rom" />
-    <Content Remove="128-1.rom" />
-    <Content Remove="_sample.z80" />
-  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="48.rom" />
     <EmbeddedResource Include="128-0.rom" />

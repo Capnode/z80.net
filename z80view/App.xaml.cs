@@ -1,6 +1,5 @@
 ﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Diagnostics;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
 namespace z80view
@@ -18,7 +17,17 @@ namespace z80view
             //z80emu.Tests.Run();
             AppBuilder.Configure<App>()
                 .UsePlatformDetect()
-                .Start<MainWindow>();
+                .StartWithClassicDesktopLifetime(args);
+        }
+
+        public override void OnFrameworkInitializationCompleted()
+        {
+            if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.MainWindow = new MainWindow();
+            }
+
+            base.OnFrameworkInitializationCompleted();
         }
     }
 }

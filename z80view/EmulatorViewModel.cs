@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Concurrent;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using Avalonia.Controls;
-using Avalonia.Media;
+using Avalonia;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using z80emu;
@@ -12,9 +12,11 @@ using z80view.Sound;
 
 namespace z80view
 {
-    public class EmulatorViewModel : Avalonia.Diagnostics.ViewModels.ViewModelBase
+    public class EmulatorViewModel : INotifyPropertyChanged
     {
-        private readonly IUIInvalidator invalidate;
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private readonly Action invalidate;
 
         private readonly IAskUserFile askFile;
 
@@ -39,9 +41,9 @@ namespace z80view
         private volatile FrameEventArgs frame;
 
         public EmulatorViewModel(
-            IUIInvalidator invalidate, 
-            IAskUserFile askFile, 
-            ISoundDeviceSet sound, 
+            Action invalidate,
+            IAskUserFile askFile,
+            ISoundDeviceSet sound,
             Emulator emulator)
         {
             this.invalidate = invalidate;
@@ -50,7 +52,7 @@ namespace z80view
             this.emulator = emulator;
 
             this.keyMapping = new KeyMapping();
-            this.Bitmap = new WriteableBitmap(new Avalonia.PixelSize(352, 312), new Avalonia.Vector(1, 1), PixelFormat.Rgba8888);
+            this.Bitmap = new WriteableBitmap(new PixelSize(352, 312), new Avalonia.Vector(96, 96), PixelFormat.Rgba8888);
             this.DumpCommand = new ActionCommand(Dump);
             this.LoadCommand = new ActionCommand(Load);
 
@@ -75,7 +77,7 @@ namespace z80view
         public string LostSoundFrames {get;set;}
 
         public int Delay {get;set;} = 10;
-        
+
         public void Stop()
         {
             if (this.cancellation.IsCancellationRequested)
@@ -120,6 +122,11 @@ namespace z80view
             }
         }
 
+        private void RaisePropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         private void Dump()
         {
             this.emulator.Dump();
@@ -160,7 +167,7 @@ namespace z80view
                 foreach (var snd in this.sound.GetConsumingEnumerable(this.cancellation.Token))
                 {
                     frame++;
-                        
+
                     if (this.soundDevice.Play(snd.GetFrame(), snd.Channel))
                         playedCount++;
 
@@ -188,7 +195,7 @@ namespace z80view
                     {
                         continue;
                     }
-                    
+
                     var n = this.frame.FrameNumber;
                     if (n % 100 == 0)
                     {
@@ -208,35 +215,36 @@ namespace z80view
                     {
                         var pal = frame.Palette;
                         var src = frame.Frame;
-                        var dst = (uint*) buf.Address;
-                        switch (buf.Format)
+                        var dst = (uint*)buf.Address;
+                        if (buf.Format.Equals(PixelFormat.Rgba8888))
                         {
-                            case PixelFormat.Rgba8888:
-                                for (int i = 0; i < src.Length; ++i)
-                                {
-                                    var c = pal[src[i]];
-                                    var rgba = (uint)(c.B << 16 | c.G << 8 | c.R) | 0xFF000000;
-                                    dst[i] = rgba;
-                                }
-                                break;
-                            case PixelFormat.Bgra8888:
-                                for (int i = 0; i < src.Length; ++i)
-                                {
-                                    var c = pal[src[i]];
-                                    var rgba = (uint)(c.R << 16 | c.G << 8 | c.B) | 0xFF000000;
-                                    dst[i] = rgba;
-                                }
-                                break;
-                            default:
-                                throw new NotImplementedException(buf.Format.ToString());
+                            for (int i = 0; i < src.Length; ++i)
+                            {
+                                var c = pal[src[i]];
+                                var rgba = (uint)(c.B << 16 | c.G << 8 | c.R) | 0xFF000000;
+                                dst[i] = rgba;
+                            }
+                        }
+                        else if (buf.Format.Equals(PixelFormat.Bgra8888))
+                        {
+                            for (int i = 0; i < src.Length; ++i)
+                            {
+                                var c = pal[src[i]];
+                                var rgba = (uint)(c.R << 16 | c.G << 8 | c.B) | 0xFF000000;
+                                dst[i] = rgba;
+                            }
+                        }
+                        else
+                        {
+                            throw new NotImplementedException(buf.Format.ToString());
                         }
                     }
 
-                    this.invalidate.Invalidate().Wait(this.cancellation.Token);
+                    this.invalidate();
                 }
             }
             catch(OperationCanceledException)
             {}
-        }   
+        }
     }
 }

@@ -1,12 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
-
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
-using Avalonia.VisualTree;
 using z80view.Sound;
 
 namespace z80view
@@ -14,7 +11,7 @@ namespace z80view
     public class MainWindow : Window
     {
         private EmulatorViewModel _viewModel;
-        private IControl _img;
+        private Control _img;
 
         public MainWindow()
         {
@@ -41,12 +38,15 @@ namespace z80view
             _img = ((Grid) Content).Children.First();
 
             var emulator = new z80emu.Emulator();
-            var invalidator = new UIInvalidator(((Grid) Content).Children.First());
-            var askfile = new AskUserFile();
+            var askfile = new AskUserFile(this);
             var soundDevice = SoundDeviceFactory.Create(emulator);
 
-            _viewModel = new EmulatorViewModel(invalidator, askfile, soundDevice, emulator);
-            this.Closed += (s,e) => _viewModel.Stop();
+            _viewModel = new EmulatorViewModel(
+                () => Dispatcher.UIThread.Invoke((Action)(() => _img.InvalidateVisual())),
+                askfile,
+                soundDevice,
+                emulator);
+            this.Closed += (s, e) => _viewModel.Stop();
         }
     }
 }

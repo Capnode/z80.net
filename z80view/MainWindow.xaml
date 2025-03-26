@@ -1,20 +1,52 @@
-﻿<Window xmlns="https://github.com/avaloniaui" Title=".NET Core Z80 Emulator"
-        Background="Black" MinWidth="640" MinHeight="480" Width="640" Height="480">
+﻿<Window
+    x:Class="z80view.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title=".NET Core Z80 Emulator"
+    Width="640"
+    Height="480"
+    MinWidth="640"
+    MinHeight="480"
+    Background="Black">
     <Grid MinWidth="640" MinHeight="480">
-        <Image Source="{Binding Bitmap}" Stretch="Fill" Cursor="Hand" />
-        <StackPanel Margin="10" HorizontalAlignment="Right" VerticalAlignment="Top" >
-            <Button Command="{Binding DumpCommand}" Margin="5" Background="Transparent" Foreground="White" Content="Dump"/>
-            <Button Command="{Binding LoadCommand}" Margin="5" Background="Transparent" Foreground="White" Content="Load"/>
-            <TextBlock Text="{Binding FPS}" Margin="5" Background="Transparent" Foreground="White"/>
-            <TextBlock Text="{Binding LostSoundFrames}" Margin="5" Background="Transparent" Foreground="White"/>
-            <Slider Value="{Binding Delay}"
-              Minimum="0"
-              Maximum="100"
-              Orientation="Vertical"
-              IsSnapToTickEnabled="False"
-              TickFrequency="1"
-              Height="300"/>
+        <Image
+            Cursor="Hand"
+            Source="{Binding Bitmap}"
+            Stretch="Fill" />
+        <StackPanel
+            Margin="10"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top">
+            <Button
+                Margin="5"
+                Background="Transparent"
+                Command="{Binding DumpCommand}"
+                Content="Dump"
+                Foreground="White" />
+            <Button
+                Margin="5"
+                Background="Transparent"
+                Command="{Binding LoadCommand}"
+                Content="Load"
+                Foreground="White" />
+            <TextBlock
+                Margin="5"
+                Background="Transparent"
+                Foreground="White"
+                Text="{Binding FPS}" />
+            <TextBlock
+                Margin="5"
+                Background="Transparent"
+                Foreground="White"
+                Text="{Binding LostSoundFrames}" />
+            <Slider
+                Height="300"
+                IsSnapToTickEnabled="False"
+                Maximum="100"
+                Minimum="0"
+                Orientation="Vertical"
+                TickFrequency="1"
+                Value="{Binding Delay}" />
         </StackPanel>
-
     </Grid>
 </Window>
